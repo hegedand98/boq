@@ -286,9 +286,9 @@ def export_to_excel_streamlit(general_qty, borehole_data):
 
         # formating
         bold_font = Font(bold=True)
-        header_fill = PatternFill(start_color='B7DEE8', end_color='B7DEE8', fill_type='solid')  # Pasztellkék
-        qty_fill = PatternFill(start_color='FFF2CC', end_color='FFF2CC', fill_type='solid')    # Pasztellsárga
-        price_fill = PatternFill(start_color='D9E1F2', end_color='D9E1F2', fill_type='solid')  # Pasztellkék árak
+        header_fill = PatternFill(start_color='B7DEE8', end_color='B7DEE8', fill_type='solid') 
+        qty_fill = PatternFill(start_color='FFF2CC', end_color='FFF2CC', fill_type='solid')   
+        price_fill = PatternFill(start_color='D9E1F2', end_color='D9E1F2', fill_type='solid') 
         thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
 
         # header

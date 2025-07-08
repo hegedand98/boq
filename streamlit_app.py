@@ -198,7 +198,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
     rows = []
     bore_sums = {name: 0 for name in bore_names}
 
-    # Globális tételek (scope == 'global')
+    # (scope == 'global')
     global_total = 0
     for cat in [c for c in CATEGORIES if c['scope'] == 'global']:
         for item in cat['items']:
@@ -217,7 +217,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
                 row[f'{name} Price'] = ''
             rows.append(row)
 
-    # Furásonkénti tételek (scope == 'borehole')
+    # for boreholes (scope == 'borehole')
     for cat in [c for c in CATEGORIES if c['scope'] == 'borehole']:
         # Kategória sor
         rows.append(OrderedDict([('Task', f"-- {cat['name']} --")]))
@@ -247,7 +247,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
             row['Total Price'] = tot_p if tot_p != 0 else ''
             rows.append(row)
 
-        # Összegző sor a kategóriához
+        # summary
         sum_row = OrderedDict([
             ('Task', f"--- Summarized costs ({cat['name']}) ---"),
             ('Unit', ''),
@@ -261,7 +261,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
             bore_sums[name] += bore_section_sums[name]
         rows.append(sum_row)
 
-    # Végösszeg sor (globális + furások)
+    # final summa
     total_sum = global_total + sum(bore_sums.values())
     total_row = OrderedDict([
         ('Task', '=== Total costs (EUR) ==='),
@@ -278,20 +278,20 @@ def export_to_excel_streamlit(general_qty, borehole_data):
     df = pd.DataFrame(rows, columns=cols)
     df = df.applymap(lambda x: '' if isinstance(x, (int, float)) and x == 0 else x)
 
-    # Excel írás memória bufferbe
+    # excel to buffer
     buffer = BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Pricing')
         ws = writer.sheets['Pricing']
 
-        # Formázások
+        # formating
         bold_font = Font(bold=True)
         header_fill = PatternFill(start_color='B7DEE8', end_color='B7DEE8', fill_type='solid')  # Pasztellkék
         qty_fill = PatternFill(start_color='FFF2CC', end_color='FFF2CC', fill_type='solid')    # Pasztellsárga
         price_fill = PatternFill(start_color='D9E1F2', end_color='D9E1F2', fill_type='solid')  # Pasztellkék árak
         thin_border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
 
-        # Fejléc formázás
+        # header
         for col_idx in range(1, len(cols)+1):
             cell = ws.cell(row=1, column=col_idx)
             cell.font = bold_font
@@ -299,37 +299,37 @@ def export_to_excel_streamlit(general_qty, borehole_data):
             cell.alignment = Alignment(horizontal='center', vertical='center')
             cell.border = thin_border
 
-        # Sorok formázása
+        # rows
         for r_idx, row in enumerate(rows, start=2):
             task_val = row['Task']
             if task_val.startswith('-- ') and task_val.endswith(' --'):
-                # Kategória sor: vastag + szürke háttér
+                # bold, gray background
                 for c_idx in range(1, len(cols)+1):
                     cell = ws.cell(row=r_idx, column=c_idx)
                     cell.font = Font(bold=True)
                     cell.fill = PatternFill(start_color='D9D9D9', end_color='D9D9D9', fill_type='solid')
                     cell.border = thin_border
             elif task_val.startswith('--- Summarized costs'):
-                # Összegző sor: vastag + világos zöld háttér
+                # bold, green background
                 for c_idx in range(1, len(cols)+1):
                     cell = ws.cell(row=r_idx, column=c_idx)
                     cell.font = Font(bold=True)
                     cell.fill = PatternFill(start_color='D8E4BC', end_color='D8E4BC', fill_type='solid')
                     cell.border = thin_border
             elif task_val.startswith('=== Total'):
-                # Végösszeg sor: vastag + világos narancs háttér
+                # bold, orange background
                 for c_idx in range(1, len(cols)+1):
                     cell = ws.cell(row=r_idx, column=c_idx)
                     cell.font = Font(bold=True)
                     cell.fill = PatternFill(start_color='FCE4D6', end_color='FCE4D6', fill_type='solid')
                     cell.border = thin_border
             else:
-                # Normál sorokhoz border
+                # normal rows
                 for c_idx in range(1, len(cols)+1):
                     cell = ws.cell(row=r_idx, column=c_idx)
                     cell.border = thin_border
 
-            # Mennyiség és ár oszlopok színezése, igazítása, ár formázás
+            # formating
             for c_idx, col_name in enumerate(cols, start=1):
                 cell = ws.cell(row=r_idx, column=c_idx)
                 if 'Qty' in col_name:
@@ -340,7 +340,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
                     cell.number_format = '€#,##0.00'
                     cell.alignment = Alignment(horizontal='right')
 
-        # Oszlopszélesség beállítások
+        # column width
         col_widths = {
             'Task': 45,
             'Unit': 10,
@@ -353,7 +353,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
             col_letter = get_column_letter(cols.index(col)+1)
             ws.column_dimensions[col_letter].width = width
 
-        # Egységárak (Unit Price) formázása
+        # Unit Price formating
         unit_price_col = cols.index('Unit Price') + 1
         for r_idx in range(2, len(rows)+2):
             cell = ws.cell(row=r_idx, column=unit_price_col)
@@ -366,7 +366,7 @@ def export_to_excel_streamlit(general_qty, borehole_data):
 
 
 def main():
-    st.title("Geotechnical Services Bill of Quantities")
+    st.title("Bill of Quantities")
 
     price_map, selected_price_col, dynamic_price_map = load_price_map_streamlit()
     if price_map is None:
